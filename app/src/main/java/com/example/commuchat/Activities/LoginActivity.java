@@ -39,7 +39,7 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.login_btn);
         loginProgress = findViewById(R.id.login_progress);
         mAuth =FirebaseAuth.getInstance();
-        HomeActivity = new Intent(this, com.example.commuchat.Activities.HomeActivity.class);
+        HomeActivity = new Intent(this, com.example.commuchat.Activities.Home.class);
         loginPhoto = findViewById(R.id.login_photo);
         loginPhoto.setOnClickListener(new View.OnClickListener() {
             @Override

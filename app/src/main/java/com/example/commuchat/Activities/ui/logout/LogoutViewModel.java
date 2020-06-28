@@ -1,16 +1,18 @@
-package com.example.commuchat.Activities.ui.gallery;
+package com.example.commuchat.Activities.ui.logout;
+
+
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class GalleryViewModel extends ViewModel {
+public class LogoutViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public GalleryViewModel() {
+    public LogoutViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is gallery fragment");
+        mText.setValue("logout");
     }
 
     public LiveData<String> getText() {

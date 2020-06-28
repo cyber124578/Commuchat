@@ -1,4 +1,4 @@
-package com.example.commuchat.Activities.ui.home;
+package com.example.commuchat.Activities.ui.logout;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,14 +14,15 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.example.commuchat.R;
 
-public class HomeFragment extends Fragment {
+public class LogoutFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        HomeViewModel homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_home, container, false);
-        final TextView textView = root.findViewById(R.id.text_home);
-        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        LogoutViewModel logoutViewModel = ViewModelProviders.of(this).get(LogoutViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_logout, container, false);
+        final TextView textView = root.findViewById(R.id.nav_logout);
+
+        logoutViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

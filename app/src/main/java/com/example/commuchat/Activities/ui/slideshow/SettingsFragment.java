@@ -15,17 +15,14 @@ import androidx.lifecycle.ViewModelProviders;
 import com.example.commuchat.R;
 
 
-public class SlideshowFragment extends Fragment {
-
-    private SlideshowViewModel slideshowViewModel;
+public class SettingsFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        slideshowViewModel =
-                ViewModelProviders.of(this).get(SlideshowViewModel.class);
+        SettingsViewModel settingsViewModel = ViewModelProviders.of(this).get(SettingsViewModel.class);
         View root = inflater.inflate(R.layout.fragment_slideshow, container, false);
         final TextView textView = root.findViewById(R.id.text_slideshow);
-        slideshowViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        settingsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

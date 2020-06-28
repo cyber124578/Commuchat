@@ -1,5 +1,6 @@
 package com.example.commuchat.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Menu;
@@ -36,15 +37,14 @@ public class Home extends AppCompatActivity {
         currentuser = mAuth.getCurrentUser();
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show());
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.getMenu().findItem(R.id.nav_logout).setOnMenuItemClickListener(menuItem -> {
+            logout();
+            return true;
+        });
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -55,7 +55,17 @@ public class Home extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
             updateNavHeader();
+
+
     }
+
+    private void logout() {
+        FirebaseAuth.getInstance().signOut();
+        Intent loginActivity = new Intent(this,LoginActivity.class);
+        startActivity(loginActivity);
+        finish();
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -71,7 +81,7 @@ public class Home extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
     public void  updateNavHeader(){
-        NavigationView navigationView =(NavigationView)findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
         TextView navUsername = headerView.findViewById(R.id.nav_username);
         TextView navEmail = headerView.findViewById(R.id.nav_email);

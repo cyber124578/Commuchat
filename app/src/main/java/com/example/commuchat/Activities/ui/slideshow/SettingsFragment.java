@@ -1,5 +1,6 @@
 package com.example.commuchat.Activities.ui.slideshow;
 
+import android.app.ActionBar;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,8 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.example.commuchat.R;
 
+import java.util.Objects;
+
 
 public class SettingsFragment extends Fragment {
 
@@ -22,6 +25,7 @@ public class SettingsFragment extends Fragment {
         SettingsViewModel settingsViewModel = ViewModelProviders.of(this).get(SettingsViewModel.class);
         View root = inflater.inflate(R.layout.fragment_slideshow, container, false);
         final TextView textView = root.findViewById(R.id.text_slideshow);
+
         settingsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {

@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "648244268372-fjccthc6gca2eb4j5cil4gp4kqfs4n7j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.commuchat",
+            "certificate_hash": "71cc9edd1c71365aeb95cbed42166598245b2d1d"
+          }
+        },
+        {
           "client_id": "648244268372-vla2pj5orbaffs36jeelhan9hgqnrfh3.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

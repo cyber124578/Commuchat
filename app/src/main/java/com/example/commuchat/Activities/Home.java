@@ -1,9 +1,12 @@
 package com.example.commuchat.Activities;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -11,15 +14,25 @@ import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.commuchat.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -30,6 +43,7 @@ import androidx.appcompat.widget.Toolbar;
 
 public class Home extends AppCompatActivity {
 
+    private static final int REQUESCODE = 2;
     private AppBarConfiguration mAppBarConfiguration;
     FirebaseAuth mAuth;
     FirebaseUser currentuser;
@@ -37,6 +51,8 @@ public class Home extends AppCompatActivity {
     ImageView popupUserImage,popupPostImage,popupAddBtn;
     TextView popupTitle,popupDescription;
     ProgressBar popupClickProgress;
+    private int PReqCode =2;
+    private Uri pickedImgUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +64,8 @@ public class Home extends AppCompatActivity {
         currentuser = mAuth.getCurrentUser();
         //initiation posts
         iniPopup();
+
+        setupPopupImageClick();
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +94,85 @@ public class Home extends AppCompatActivity {
 
     }
 
+    private void setupPopupImageClick() {
+
+
+        popupPostImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // here when image clicked we need to open the gallery
+                // before we open the gallery we need to check if our app have the access to user files
+                // we did this before in register activity I'm just going to copy the code to save time ...
+
+                checkAndRequestForPermission();
+
+
+            }
+        });
+
+
+
+    }
+
+
+    private void checkAndRequestForPermission() {
+
+
+        if (ContextCompat.checkSelfPermission(Home.this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(Home.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+                Toast.makeText(Home.this,"Please accept for required permission",Toast.LENGTH_SHORT).show();
+
+            }
+
+            else
+            {
+                ActivityCompat.requestPermissions(Home.this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        PReqCode);
+            }
+
+        }
+        else
+            // everything goes well : we have permission to access user gallery
+            openGallery();
+
+    }
+
+
+
+
+
+    private void openGallery() {
+        //TODO: open gallery intent and wait for user to pick an image !
+
+        Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        galleryIntent.setType("image/*");
+        startActivityForResult(galleryIntent,REQUESCODE);
+    }
+
+
+
+    // when user picked an image ...
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && requestCode == REQUESCODE && data != null ) {
+
+            // the user has successfully picked an image
+            // we need to save its reference to a Uri variable
+            pickedImgUri = data.getData();;
+            popupPostImage.setImageURI(pickedImgUri);
+
+        }
+
+
+    }
+
+
+
     private void iniPopup() {
         popAddPost = new Dialog(this);
         popAddPost.setContentView(R.layout.popup_add_post);
@@ -97,9 +194,72 @@ public class Home extends AppCompatActivity {
             public void onClick(View view) {
                 popupAddBtn.setVisibility(View.INVISIBLE);
                 popupClickProgress.setVisibility(View.VISIBLE);
+
+
+                if (!popupTitle.getText().toString().isEmpty()
+                && !popupDescription.getText().toString().isEmpty()
+                &&pickedImgUri!=null){
+                    StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("blog_images");
+                    StorageReference imageFilePath = storageReference.child(pickedImgUri.getLastPathSegment());
+                    imageFilePath.putFile(pickedImgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                imageFilePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        String imageDownloadLink  = uri.toString();
+                                        //post object
+                                        Post post = new Post(popupTitle.getText().toString(),
+                                                popupDescription.getText().toString(),
+                                                imageDownloadLink,
+                                                currentuser.getUid(),
+                                                currentuser.getPhotoUrl().toString());
+                                        addPost(post);
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        showMessage(e.getMessage());
+                                        popupClickProgress.setVisibility(View.INVISIBLE);
+                                        popupAddBtn.setVisibility(View.VISIBLE);
+                                    }
+                                });
+                        }
+                    });
+                    
+                }
+                else
+                {
+                    showMessage("Please verify all fields and choose an image");
+                    popupAddBtn.setVisibility(View.VISIBLE);
+                    popupClickProgress.setVisibility(View.INVISIBLE);
+                }
             }
         });
 
+    }
+
+    private void addPost(Post post) {
+        FirebaseDatabase database =FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("Posts").push();
+        //get post unique ID and update post
+        String key = myRef.getKey();
+        post.setPostKey(key);
+
+        //link posts with db
+        myRef.setValue(post).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                showMessage("post Added successfully");
+                popupClickProgress.setVisibility(View.INVISIBLE);
+                popupAddBtn.setVisibility(View.VISIBLE);
+                popAddPost.dismiss();
+            }
+        });
+    }
+
+    private void showMessage(String message) {
+        Toast.makeText(Home.this, "please fill all fields",Toast.LENGTH_LONG).show();
     }
 
     private void logout() {

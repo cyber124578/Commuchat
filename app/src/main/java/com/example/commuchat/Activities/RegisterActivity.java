@@ -60,45 +60,39 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        regBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                regBtn.setVisibility(View.INVISIBLE);
-                loadingProgress.setVisibility(View.VISIBLE);
-                final String email = userEmail.getText().toString();
-                final String password = userPassword.getText().toString();
-                final String password2 = userPassword2.getText().toString();
-                final String name = userName.getText().toString();
+        regBtn.setOnClickListener(view -> {
+            regBtn.setVisibility(View.INVISIBLE);
+            loadingProgress.setVisibility(View.VISIBLE);
+            final String email = userEmail.getText().toString();
+            final String password = userPassword.getText().toString();
+            final String password2 = userPassword2.getText().toString();
+            final String name = userName.getText().toString();
 
 
-                if (email.isEmpty() || name.isEmpty() || password.isEmpty() || !password.equals(password2)) {
-                    //en cas d'erreur: tout les champ doit étre véerifier
-                    // il faut afficher un alert
-                    showMessage("Please fill all the fields!");
-                    regBtn.setVisibility(View.VISIBLE);
-                    loadingProgress.setVisibility(View.INVISIBLE);
-                }
-                else
-                {
-                    //tout va bien et les champs sont tout remplis et on peut faire l'operation de l'inscription
-                    //
-                    CreateUserAccount(email,name,password);
-                }
+            if (email.isEmpty() || name.isEmpty() || password.isEmpty() || !password.equals(password2)) {
+                //en cas d'erreur: tout les champ doit étre véerifier
+                // il faut afficher un alert
+                showMessage("Please fill all the fields!");
+                regBtn.setVisibility(View.VISIBLE);
+                loadingProgress.setVisibility(View.INVISIBLE);
+            }
+            else
+            {
+                //tout va bien et les champs sont tout remplis et on peut faire l'operation de l'inscription
+                //
+                CreateUserAccount(email,name,password);
             }
         });
 
         ImgUserPhoto = findViewById(R.id.regUserPhoto);
 
-        ImgUserPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (Build.VERSION.SDK_INT>=22) {
-                    checkAndRequestForpermission();
-                }
-                else
-                {
-                    openGallery();
-                }
+        ImgUserPhoto.setOnClickListener(view -> {
+            if (Build.VERSION.SDK_INT>=22) {
+                checkAndRequestForpermission();
+            }
+            else
+            {
+                openGallery();
             }
         });
     }
@@ -106,18 +100,15 @@ public class RegisterActivity extends AppCompatActivity {
     private void CreateUserAccount(String email, final String name, String password) {
         //creation du compte d'utilisateur avec un email et mot de pass specifique
        mAuth.createUserWithEmailAndPassword(email,password)
-               .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                   @Override
-                   public void onComplete(@NonNull Task<AuthResult> task) {
-                       if (task.isSuccessful()) {
-                           showMessage("Account created");
-                           updateUserInfo(name, pickedImgUri,mAuth.getCurrentUser());
-                       }
-                       else {
-                           showMessage("Account creation failed" + Objects.requireNonNull(task.getException()).getMessage());
-                            regBtn.setVisibility(View.VISIBLE);
-                            loadingProgress.setVisibility(View.INVISIBLE);
-                       }
+               .addOnCompleteListener(this, task -> {
+                   if (task.isSuccessful()) {
+                       showMessage("Account created");
+                       updateUserInfo(name, pickedImgUri,mAuth.getCurrentUser());
+                   }
+                   else {
+                       showMessage("Account creation failed" + Objects.requireNonNull(task.getException()).getMessage());
+                        regBtn.setVisibility(View.VISIBLE);
+                        loadingProgress.setVisibility(View.INVISIBLE);
                    }
                });
     }
@@ -125,33 +116,22 @@ public class RegisterActivity extends AppCompatActivity {
     private void updateUserInfo(final String name, Uri pickedImgUri, final FirebaseUser currentUser) {
         StorageReference mStorage = FirebaseStorage.getInstance().getReference().child("user_photos");
         final StorageReference imageFilepath = mStorage.child(Objects.requireNonNull(pickedImgUri.getLastPathSegment()));
-        imageFilepath.putFile(pickedImgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                imageFilepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
+        imageFilepath.putFile(pickedImgUri).addOnSuccessListener(taskSnapshot -> imageFilepath.getDownloadUrl().addOnSuccessListener(uri -> {
 
 
-                        UserProfileChangeRequest profleUpdate = new UserProfileChangeRequest.Builder()
-                                .setDisplayName(name)
-                                .setPhotoUri(uri)
-                                .build();
-                        currentUser.updateProfile(profleUpdate)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful()){
-                                            showMessage("Registration completed");
-                                            updateUI();
-                                        }
-                                    }
-                                });
+            UserProfileChangeRequest profleUpdate = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(name)
+                    .setPhotoUri(uri)
+                    .build();
+            currentUser.updateProfile(profleUpdate)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            showMessage("Registration completed");
+                            updateUI();
+                        }
+                    });
 
-                    }
-                });
-            }
-        });
+        }));
     }
 
     private void updateUI() {

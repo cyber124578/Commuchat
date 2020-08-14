@@ -1,4 +1,4 @@
-package com.example.commuchat.Activities;
+package com.example.commuchat.Activities.Models;
 
 import com.google.firebase.database.ServerValue;
 

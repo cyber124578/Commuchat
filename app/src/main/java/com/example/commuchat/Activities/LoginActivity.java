@@ -40,32 +40,26 @@ public class LoginActivity extends AppCompatActivity {
         mAuth =FirebaseAuth.getInstance();
         HomeActivity = new Intent(this, com.example.commuchat.Activities.Home.class);
         ImageView loginPhoto = findViewById(R.id.login_photo);
-        loginPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent registerActivity = new Intent(getApplicationContext(),RegisterActivity.class);
-                startActivity(registerActivity);
-                finish();
-            }
+        loginPhoto.setOnClickListener(view -> {
+            Intent registerActivity = new Intent(getApplicationContext(),RegisterActivity.class);
+            startActivity(registerActivity);
+            finish();
         });
         loginProgress.setVisibility(View.INVISIBLE);
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                loginProgress.setVisibility(View.VISIBLE);
-                btnLogin.setVisibility(View.INVISIBLE);
+        btnLogin.setOnClickListener(view -> {
+            loginProgress.setVisibility(View.VISIBLE);
+            btnLogin.setVisibility(View.INVISIBLE);
 
-                final String mail =usermail.getText().toString();
-                final String password = userpassword.getText().toString();
+            final String mail =usermail.getText().toString();
+            final String password = userpassword.getText().toString();
 
-                if (mail.isEmpty() || password.isEmpty()) {
-                    showMessage("Please verify the fields");
-                    btnLogin.setVisibility(View.VISIBLE);
-                    loginProgress.setVisibility(View.INVISIBLE);
-                }
-                else {
-                    SignIn(mail,password);
-                }
+            if (mail.isEmpty() || password.isEmpty()) {
+                showMessage("Please verify the fields");
+                btnLogin.setVisibility(View.VISIBLE);
+                loginProgress.setVisibility(View.INVISIBLE);
+            }
+            else {
+                SignIn(mail,password);
             }
         });
 
@@ -73,20 +67,17 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void SignIn(String mail, String password) {
-        mAuth.signInWithEmailAndPassword(mail,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()){
-                    loginProgress.setVisibility(View.INVISIBLE);
-                    btnLogin.setVisibility(View.VISIBLE);
-                    updateUI();
-                }
-                else
-                {
-                    showMessage(Objects.requireNonNull(task.getException()).getMessage());
-                    btnLogin.setVisibility(View.VISIBLE);
-                    loginProgress.setVisibility(View.INVISIBLE);
-                }
+        mAuth.signInWithEmailAndPassword(mail,password).addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
+                loginProgress.setVisibility(View.INVISIBLE);
+                btnLogin.setVisibility(View.VISIBLE);
+                updateUI();
+            }
+            else
+            {
+                showMessage(Objects.requireNonNull(task.getException()).getMessage());
+                btnLogin.setVisibility(View.VISIBLE);
+                loginProgress.setVisibility(View.INVISIBLE);
             }
         });
     }
